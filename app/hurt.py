@@ -3,6 +3,7 @@ import profile
 from unittest import result
 # from logging import _Level
 from flask import Flask, url_for, render_template, redirect, flash, request, session
+from flask_socketio import SocketIO, send
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, EqualTo, Email
 from flask_sqlalchemy import SQLAlchemy
@@ -16,6 +17,7 @@ from app.forms import LoginForm, NewPost, RegistrationForm
 app =Flask(__name__)
 
 db = SQLAlchemy(app)
+socketio = SocketIO(app)
 
 mail = Mail(app)
 
@@ -122,32 +124,45 @@ def home():
 
 @app.route("/addpost")
 def add_post():
-    post = Post
+    post = Post()
     make_post ={
         'id': "post-{}".format(uuid.uuid4().hex),
+        "Author": request.form.get("author"),
         "title" : request.form.get("title"),
-        "content": request.form.get("content")
+        "content": request.form.get("content"),
+        "image": request.form.get("post_image")
         }
     if post == True:
         if post.post_image.data and post.title.data and post.content.data:
             make_post = True             
             relationship = Post(title =post.title.data, content =post.content.data, post_image = post.post_image.data )
-        db.session.add(post)
+        db.session.add(relationship)
         db.session.commit
         flash("Your post has been created.")
-    return("")
+    return redirect(url_for("home.html", make_post = make_post))
 
 
 @app.route("/updatepost", methods = ["PUT", "DELETE"])
 def delete_post():
     post = Post()
+    post.query.get_or_404(post_id)
     data = {"id":"post-{}".format(uuid.uuid4()).hex}
     if request.method == "DELETE":
         data["post"]= "deleted"
-        pusher.trigger("post", "deleted", data)
+        pusher.trigger("post", "deleted", data, post = post)
 
 
+@app.route('/editpost/<int:post_id>', methods=['POST'])
+def editpost(post_id):
+    post = Post.query.get_or_404(post_id)
 
+    post.title = request.form['title']
+    post.content = request.form['content']
+    post.author = request.form['author']
+    post.content = request.form['content']
+
+    db.session.commit()
+    return redirect('/')
 
 @app.route("/register")
 def register():
@@ -184,6 +199,12 @@ def contact():
                 msg.send 
     return redirect (url_for("contact"), form = form)
 
+@socketio.on("message")
+def message(msg):
+    print("message"+ msg)
+    send(msg, broadcast = True)
+
 
 if __name__ =="__main__":
+    socketio.run(app)
     app.run(debug =True)

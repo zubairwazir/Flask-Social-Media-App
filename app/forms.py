@@ -1,7 +1,9 @@
-from turtle import title
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, FileAllowed
+from wtforms.validators import DataRequired, Length, Email, EqualTo
+from flask_wtf.file import FileField, FileAllowed
+
 
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(min =1, max =15)])
@@ -19,13 +21,19 @@ class LoginForm(FlaskForm):
 
 class NewPost(FlaskForm):
     title = StringField("Title", validators =[DataRequired(), Length(min=5, max =22)])
-    image = FileField("Image", validators =[FileAllowed(["jpg", "png"])])
+    image = FileField("Image", validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     content =TextAreaField("Content", validators =[DataRequired()])
     submit =SubmitField("Submit")
 
 class ContactForm(FlaskForm):
-    email = RegistrationForm.email
-    name = StringField("Name", validators=[DataRequired()])
-    title = StringField("Title", validators=[DataRequired()])
-    message = StringField("Message", validators =[DataRequired])
+    name = StringField("Name")
+    email = StringField("Email")
+    subject = StringField("Subject")
+    message = TextAreaField("Message")
     submit = SubmitField("Send")
+
+
+
+
+
+

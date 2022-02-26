@@ -1,6 +1,8 @@
-from app import app
-from flask import  render_template, url_for, flash, redirect
-from forms import RegistrationForm, LoginForm
+from flask import render_template, url_for, redirect, flash, request
+from app import app, db, bcrypt
+from app.forms import RegistrationForm, LoginForm
+# from app.models import User, Post
+from flask_login import login_user, logout_user, current_user,login_required
 
 
 posts = [
