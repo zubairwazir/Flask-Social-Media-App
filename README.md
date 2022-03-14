@@ -1,2 +1,2 @@
 # Flask-Social-Media-App
-#zubair ahmad Khan
+#Zubair Ahmad Khan
